@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function FeedbackPage() {
   const [name, setName] = useState("");
@@ -9,6 +10,19 @@ export default function FeedbackPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [redirecting, setRedirecting] = useState(false);
+  const router = useRouter();
+
+  // Check if user is logged in
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const username = localStorage.getItem("username");
+      if (!username) {
+        setRedirecting(true);
+        router.push("/login");
+      }
+    }
+  }, [router]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -41,6 +55,14 @@ export default function FeedbackPage() {
       setSubmitting(false);
     }
   };
+
+  if (redirecting) {
+    return (
+      <main className="mx-auto max-w-xl px-4 py-10">
+        <div className="text-center text-gray-600">Redirecting to login…</div>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-xl px-4 py-10">
