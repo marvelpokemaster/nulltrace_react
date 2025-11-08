@@ -1,24 +1,14 @@
 "use client";
 
-import React, { useState, FormEvent, useEffect } from "react";
+import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedUsername = localStorage.getItem("username");
-      if (savedUsername) {
-        router.push("/feedback");
-      }
-    }
-  }, [router]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -28,7 +18,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/login", {
+      const res = await fetch("http://127.0.0.1:5000/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -37,15 +27,13 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Login failed");
+        throw new Error(data.error || "Registration failed");
       }
 
-      // Store username and redirect to feedback
-      localStorage.setItem("username", username);
-      window.dispatchEvent(new CustomEvent("authChange"));
-      router.push("/feedback");
+      // Registration successful, redirect to login
+      router.push("/login");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to login");
+      setError(err instanceof Error ? err.message : "Failed to register");
     } finally {
       setSubmitting(false);
     }
@@ -57,9 +45,9 @@ export default function LoginPage() {
 
       <section className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6">
         <div className="w-full rounded-xl border border-zinc-800 bg-[#111] p-8 shadow-2xl">
-          <h1 className="mb-2 text-3xl font-semibold tracking-tight text-zinc-100">Login</h1>
+          <h1 className="mb-2 text-3xl font-semibold tracking-tight text-zinc-100">Register</h1>
           <p className="mb-8 text-zinc-400">
-            Enter your username to continue
+            Create a new account
           </p>
 
           {error && (
@@ -107,16 +95,16 @@ export default function LoginPage() {
               disabled={submitting}
               className="w-full inline-flex items-center justify-center rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:bg-blue-600 hover:shadow-xl hover:shadow-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-blue-500"
             >
-              {submitting ? "Logging in..." : "Login"}
+              {submitting ? "Registering..." : "Register"}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <a
-              href="/register"
+              href="/login"
               className="text-sm text-zinc-400 hover:text-blue-400 transition-colors"
             >
-              Don't have an account? Register
+              Already have an account? Log in
             </a>
           </div>
         </div>
@@ -124,3 +112,4 @@ export default function LoginPage() {
     </main>
   );
 }
+

@@ -32,7 +32,7 @@ export default function Navbar() {
     setUsername(null);
     // Dispatch custom event for same-tab logout
     window.dispatchEvent(new CustomEvent("authChange"));
-    router.push("/");
+    router.push("/login");
   };
 
   if (!mounted) {
@@ -65,37 +65,31 @@ export default function Navbar() {
             >
               Home
             </Link>
-            <Link
-              href="/feedback"
-              className={`text-sm font-medium transition-colors duration-200 ${
-                pathname === "/feedback"
-                  ? "text-blue-400"
-                  : "text-zinc-400 hover:text-cyan-400"
-              }`}
-            >
-              Feedback
-            </Link>
-            <Link
-              href="/opinions"
-              className={`text-sm font-medium transition-colors duration-200 ${
-                pathname === "/opinions"
-                  ? "text-blue-400"
-                  : "text-zinc-400 hover:text-cyan-400"
-              }`}
-            >
-              Opinions
-            </Link>
-
-            {/* Login/Logout */}
-            <div className="ml-4 border-l border-zinc-800 pl-6">
-              {username ? (
-                <button
-                  onClick={handleLogout}
-                  className="text-sm font-medium text-zinc-400 transition-colors duration-200 hover:text-red-400"
+            {username ? (
+              <>
+                <Link
+                  href="/feedback"
+                  className={`text-sm font-medium transition-colors duration-200 ${
+                    pathname === "/feedback"
+                      ? "text-blue-400"
+                      : "text-zinc-400 hover:text-cyan-400"
+                  }`}
                 >
-                  Logout ({username})
-                </button>
-              ) : (
+                  Feedback
+                </Link>
+                <Link
+                  href="/opinions"
+                  className={`text-sm font-medium transition-colors duration-200 ${
+                    pathname === "/opinions"
+                      ? "text-blue-400"
+                      : "text-zinc-400 hover:text-cyan-400"
+                  }`}
+                >
+                  Opinions
+                </Link>
+              </>
+            ) : (
+              <>
                 <Link
                   href="/login"
                   className={`text-sm font-medium transition-colors duration-200 ${
@@ -106,8 +100,30 @@ export default function Navbar() {
                 >
                   Login
                 </Link>
-              )}
-            </div>
+                <Link
+                  href="/register"
+                  className={`text-sm font-medium transition-colors duration-200 ${
+                    pathname === "/register"
+                      ? "text-blue-400"
+                      : "text-zinc-400 hover:text-cyan-400"
+                  }`}
+                >
+                  Register
+                </Link>
+              </>
+            )}
+
+            {/* Logout */}
+            {username && (
+              <div className="ml-4 border-l border-zinc-800 pl-6">
+                <button
+                  onClick={handleLogout}
+                  className="text-sm font-medium text-zinc-400 transition-colors duration-200 hover:text-red-400"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

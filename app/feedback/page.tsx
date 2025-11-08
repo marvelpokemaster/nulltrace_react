@@ -4,12 +4,13 @@ import React, { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function FeedbackPage() {
-  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [redirecting, setRedirecting] = useState(false);
+  const [result, setResult] = useState<any>(null);
   const router = useRouter();
 
   // Check if user is logged in
@@ -29,24 +30,27 @@ export default function FeedbackPage() {
     
     setSubmitting(true);
     setError("");
+    setResult(null);
     
     try {
-      const response = await fetch("/api/feedback", {
+      const res = await fetch("http://127.0.0.1:5000/api/feedback", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, message }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          message,
+        }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
+      setResult(data);
 
-      if (!response.ok || !data.success) {
+      if (!res.ok) {
         throw new Error(data.error || "Failed to submit feedback");
       }
 
       setSubmitted(true);
-      setName("");
+      setEmail("");
       setMessage("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit feedback");
@@ -81,9 +85,31 @@ export default function FeedbackPage() {
         <h1 className="mb-8 text-3xl font-semibold tracking-tight text-zinc-100">Feedback</h1>
 
         <div className="rounded-xl border border-zinc-800 bg-[#111] p-6 shadow-xl">
-          {submitted && (
-            <div className="mb-6 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400 backdrop-blur-sm">
-              Thanks for your feedback!
+          {submitted && result && (
+            <div className="mb-6 space-y-3">
+              <div className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-400 backdrop-blur-sm">
+                Thanks for your feedback!
+              </div>
+              {result.sentiment && (
+                <div className="rounded-lg border border-zinc-700 bg-[#1a1a1a] p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-zinc-300">Sentiment:</span>
+                    <span className="text-sm font-semibold text-blue-400">{result.sentiment}</span>
+                  </div>
+                  {result.rating !== undefined && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-zinc-300">Rating:</span>
+                      <span className="text-sm font-semibold text-cyan-400">{result.rating}/5</span>
+                    </div>
+                  )}
+                  {result.hash && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-zinc-300">Hash:</span>
+                      <span className="text-xs font-mono text-zinc-400 break-all">{result.hash}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -95,16 +121,16 @@ export default function FeedbackPage() {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="name" className="mb-2 block text-sm font-medium text-zinc-300">
-                Name
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-zinc-300">
+                Email
               </label>
               <input
-                id="name"
-                name="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
+                id="email"
+                name="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your.email@example.com"
                 className="block w-full rounded-lg border border-zinc-700 bg-[#222] px-4 py-3 text-zinc-100 placeholder:text-zinc-500 shadow-inner outline-none ring-0 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
