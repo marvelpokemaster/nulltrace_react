@@ -13,8 +13,9 @@ cd nulltrace_react
 ```
 
 Third, install dependencies using [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
+```bash
+npm install
 ```
-npm install```
 
 Fourth, run the development server:
 
