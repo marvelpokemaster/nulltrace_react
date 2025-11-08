@@ -52,6 +52,9 @@ Third, install dependencies
 ```
 pip install -r requirements.txt
 ```
+
+sql wont work normally
+
 Fourth run the sql 
 ```bash
 psql -U postgres -f db.sql

@@ -10,11 +10,12 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
 
-  // Redirect if already logged in
+  // Auto-redirect if already logged in
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedUsername = localStorage.getItem("username");
-      if (savedUsername) {
+      const savedUserId = localStorage.getItem("user_id");
+      if (savedUsername && savedUserId) {
         router.push("/feedback");
       }
     }
@@ -36,12 +37,11 @@ export default function LoginPage() {
 
       const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "Login failed");
-      }
+      if (!res.ok) throw new Error(data.error || "Invalid username or password");
 
-      // Store username and redirect to feedback
-      localStorage.setItem("username", username);
+      // Save user session to localStorage
+      localStorage.setItem("username", data.name || username);
+      localStorage.setItem("user_id", data.user_id);
       window.dispatchEvent(new CustomEvent("authChange"));
       router.push("/feedback");
     } catch (err) {
@@ -54,16 +54,13 @@ export default function LoginPage() {
   return (
     <main className="relative min-h-screen bg-black text-zinc-100">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(1200px_600px_at_50%_-100px,rgba(59,130,246,0.1),transparent_60%)]" />
-
       <section className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6">
         <div className="w-full rounded-xl border border-zinc-800 bg-[#111] p-8 shadow-2xl">
-          <h1 className="mb-2 text-3xl font-semibold tracking-tight text-zinc-100">Login</h1>
-          <p className="mb-8 text-zinc-400">
-            Enter your username to continue
-          </p>
+          <h1 className="mb-2 text-3xl font-semibold text-zinc-100">Login</h1>
+          <p className="mb-8 text-zinc-400">Enter your credentials to continue</p>
 
           {error && (
-            <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400 backdrop-blur-sm">
+            <div className="mb-6 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-400">
               {error}
             </div>
           )}
@@ -75,14 +72,12 @@ export default function LoginPage() {
               </label>
               <input
                 id="username"
-                name="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
                 required
-                className="block w-full rounded-lg border border-zinc-700 bg-[#222] px-4 py-3 text-zinc-100 placeholder:text-zinc-500 shadow-inner outline-none ring-0 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                autoFocus
+                className="w-full rounded-lg border border-zinc-700 bg-[#222] px-4 py-3 text-zinc-100 placeholder:text-zinc-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
@@ -92,31 +87,27 @@ export default function LoginPage() {
               </label>
               <input
                 id="password"
-                name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 required
-                className="block w-full rounded-lg border border-zinc-700 bg-[#222] px-4 py-3 text-zinc-100 placeholder:text-zinc-500 shadow-inner outline-none ring-0 transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-lg border border-zinc-700 bg-[#222] px-4 py-3 text-zinc-100 placeholder:text-zinc-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full inline-flex items-center justify-center rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:bg-blue-600 hover:shadow-xl hover:shadow-blue-500/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-blue-500"
+              className="w-full rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white hover:bg-blue-600 transition-all disabled:opacity-50"
             >
               {submitting ? "Logging in..." : "Login"}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <a
-              href="/register"
-              className="text-sm text-zinc-400 hover:text-blue-400 transition-colors"
-            >
-              Don't have an account? Register
+            <a href="/register" className="text-sm text-zinc-400 hover:text-blue-400">
+              Don’t have an account? Register
             </a>
           </div>
         </div>

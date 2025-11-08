@@ -6,44 +6,38 @@ import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
   const [username, setUsername] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
+  // Sync login/logout state
   useEffect(() => {
-    setMounted(true);
-    if (typeof window !== "undefined") {
-      const savedUsername = localStorage.getItem("username");
-      setUsername(savedUsername);
+    const updateAuth = () => {
+      setUsername(localStorage.getItem("username"));
+    };
 
-      // Listen for storage changes (for logout from other tabs)
-      const handleStorageChange = () => {
-        const newUsername = localStorage.getItem("username");
-        setUsername(newUsername);
-      };
+    updateAuth(); // initial
+    window.addEventListener("authChange", updateAuth);
+    window.addEventListener("storage", updateAuth);
 
-      window.addEventListener("storage", handleStorageChange);
-      return () => window.removeEventListener("storage", handleStorageChange);
-    }
+    return () => {
+      window.removeEventListener("authChange", updateAuth);
+      window.removeEventListener("storage", updateAuth);
+    };
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("username");
+    localStorage.removeItem("user_id");
     setUsername(null);
-    // Dispatch custom event for same-tab logout
     window.dispatchEvent(new CustomEvent("authChange"));
     router.push("/login");
   };
-
-  if (!mounted) {
-    return null;
-  }
 
   return (
     <nav className="border-b border-zinc-800 bg-[#111]/80 backdrop-blur-md shadow-lg">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo/Brand */}
+          {/* Logo */}
           <div className="flex items-center">
             <Link
               href="/"
@@ -53,7 +47,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Navigation Links */}
+          {/* Links */}
           <div className="flex items-center gap-6">
             <Link
               href="/"
@@ -65,6 +59,7 @@ export default function Navbar() {
             >
               Home
             </Link>
+
             {username ? (
               <>
                 <Link
@@ -77,6 +72,7 @@ export default function Navbar() {
                 >
                   Feedback
                 </Link>
+
                 <Link
                   href="/opinions"
                   className={`text-sm font-medium transition-colors duration-200 ${
@@ -87,6 +83,13 @@ export default function Navbar() {
                 >
                   Opinions
                 </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="ml-6 text-sm font-medium text-zinc-400 hover:text-red-400 transition-colors border-l border-zinc-800 pl-6"
+                >
+                  Logout
+                </button>
               </>
             ) : (
               <>
@@ -112,22 +115,9 @@ export default function Navbar() {
                 </Link>
               </>
             )}
-
-            {/* Logout */}
-            {username && (
-              <div className="ml-4 border-l border-zinc-800 pl-6">
-                <button
-                  onClick={handleLogout}
-                  className="text-sm font-medium text-zinc-400 transition-colors duration-200 hover:text-red-400"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>
     </nav>
   );
 }
-
