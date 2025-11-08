@@ -45,6 +45,7 @@ cd ./flask_backend
 
 Second, setup venv
 ```
+pyhton -m venv venv
 source ./venv/activate
 ```
 Third, install dependencies
