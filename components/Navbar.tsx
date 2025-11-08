@@ -40,14 +40,14 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-sm">
+    <nav className="border-b border-zinc-800 bg-[#111]/80 backdrop-blur-md shadow-lg">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo/Brand */}
           <div className="flex items-center">
             <Link
               href="/"
-              className="text-lg font-semibold text-zinc-100 transition hover:text-white"
+              className="text-lg font-semibold bg-gradient-to-r from-zinc-100 to-zinc-400 bg-clip-text text-transparent transition hover:from-blue-400 hover:to-cyan-400"
             >
               NullTrace
             </Link>
@@ -57,30 +57,30 @@ export default function Navbar() {
           <div className="flex items-center gap-6">
             <Link
               href="/"
-              className={`text-sm font-medium transition ${
+              className={`text-sm font-medium transition-colors duration-200 ${
                 pathname === "/"
-                  ? "text-zinc-100"
-                  : "text-zinc-400 hover:text-zinc-100"
+                  ? "text-blue-400"
+                  : "text-zinc-400 hover:text-cyan-400"
               }`}
             >
               Home
             </Link>
             <Link
               href="/feedback"
-              className={`text-sm font-medium transition ${
+              className={`text-sm font-medium transition-colors duration-200 ${
                 pathname === "/feedback"
-                  ? "text-zinc-100"
-                  : "text-zinc-400 hover:text-zinc-100"
+                  ? "text-blue-400"
+                  : "text-zinc-400 hover:text-cyan-400"
               }`}
             >
               Feedback
             </Link>
             <Link
               href="/opinions"
-              className={`text-sm font-medium transition ${
+              className={`text-sm font-medium transition-colors duration-200 ${
                 pathname === "/opinions"
-                  ? "text-zinc-100"
-                  : "text-zinc-400 hover:text-zinc-100"
+                  ? "text-blue-400"
+                  : "text-zinc-400 hover:text-cyan-400"
               }`}
             >
               Opinions
@@ -91,17 +91,17 @@ export default function Navbar() {
               {username ? (
                 <button
                   onClick={handleLogout}
-                  className="text-sm font-medium text-zinc-400 transition hover:text-zinc-100"
+                  className="text-sm font-medium text-zinc-400 transition-colors duration-200 hover:text-red-400"
                 >
                   Logout ({username})
                 </button>
               ) : (
                 <Link
                   href="/login"
-                  className={`text-sm font-medium transition ${
+                  className={`text-sm font-medium transition-colors duration-200 ${
                     pathname === "/login"
-                      ? "text-zinc-100"
-                      : "text-zinc-400 hover:text-zinc-100"
+                      ? "text-blue-400"
+                      : "text-zinc-400 hover:text-cyan-400"
                   }`}
                 >
                   Login
