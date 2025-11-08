@@ -11,12 +11,18 @@ export default function Home() {
           Share opinions anonymously with trust and privacy.
         </p>
 
-        <div className="mt-8">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
           <Link
             href="/feedback"
-            className="inline-flex items-center rounded-md bg-zinc-100 px-5 py-3 text-sm font-medium text-black shadow-sm transition hover:bg-zinc-200"
+            className="inline-flex items-center justify-center rounded-md bg-zinc-100 px-5 py-3 text-sm font-medium text-black shadow-sm transition hover:bg-zinc-200"
           >
             Give Feedback
+          </Link>
+          <Link
+            href="/opinions"
+            className="inline-flex items-center justify-center rounded-md border border-zinc-700 bg-transparent px-5 py-3 text-sm font-medium text-zinc-100 shadow-sm transition hover:bg-zinc-900 hover:border-zinc-600"
+          >
+            View Public Opinions
           </Link>
         </div>
       </section>

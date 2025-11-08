@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, FormEvent } from "react";
+import Link from "next/link";
 
 export default function FeedbackPage() {
   const [name, setName] = useState("");
@@ -96,6 +97,15 @@ export default function FeedbackPage() {
           {submitting ? "Submitting..." : "Submit"}
         </button>
       </form>
+
+      <div className="mt-8">
+        <Link
+          href="/"
+          className="inline-flex items-center text-sm text-gray-600 transition hover:text-gray-900"
+        >
+          ← Go back to Home
+        </Link>
+      </div>
     </main>
   );
 }
