@@ -12,14 +12,20 @@ export default function LoginPage() {
 
   // Auto-redirect if already logged in
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedUsername = localStorage.getItem("username");
-      const savedUserId = localStorage.getItem("user_id");
-      if (savedUsername && savedUserId) {
-        router.push("/feedback");
+  if (typeof window !== "undefined") {
+    const savedUsername = localStorage.getItem("username");
+    const savedUserId = localStorage.getItem("user_id");
+
+    if (savedUsername && savedUserId) {
+      if (savedUsername.toLowerCase() === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/opinions");
       }
     }
-  }, [router]);
+  }
+}, [router]);
+
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,7 +49,11 @@ export default function LoginPage() {
       localStorage.setItem("username", data.name || username);
       localStorage.setItem("user_id", data.user_id);
       window.dispatchEvent(new CustomEvent("authChange"));
-      router.push("/feedback");
+      if (data.name && data.name.toLowerCase() === "admin") {
+  router.push("/admin");
+} else {
+  router.push("/opinions");
+}
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to login");
     } finally {

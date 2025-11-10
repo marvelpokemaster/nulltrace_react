@@ -1,61 +1,62 @@
-"use client";
+'use client'
 
-import React, { useState, FormEvent, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, FormEvent, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function FeedbackPage() {
-  const [message, setMessage] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
-  const [username, setUsername] = useState("");
-  const router = useRouter();
+  const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+  const [username, setUsername] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    const storedUserId = localStorage.getItem("user_id");
+    const storedUsername = localStorage.getItem('username')
+    const storedUserId = localStorage.getItem('user_id')
     if (!storedUserId || !storedUsername) {
-      router.push("/login");
-      return;
+      router.push('/login')
+      return
     }
-    setUsername(storedUsername);
-  }, [router]);
+    setUsername(storedUsername)
+  }, [router])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (submitting) return;
+    e.preventDefault()
+    if (submitting) return
 
-    const userId = localStorage.getItem("user_id");
+    const userId = localStorage.getItem('user_id')
     if (!userId) {
-      setError("Please log in first.");
-      router.push("/login");
-      return;
+      setError('Please log in first.')
+      router.push('/login')
+      return
     }
 
-    setSubmitting(true);
-    setError("");
+    setSubmitting(true)
+    setError('')
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('http://127.0.0.1:5000/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           submitted_by: userId,
-          content: message,
-        }),
-      });
+          content: message
+          // no rating here — backend infers it via TextBlob
+        })
+      })
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to submit feedback");
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to submit feedback')
 
-      setSubmitted(true);
-      setMessage("");
+      setSubmitted(true)
+      setMessage('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to submit feedback");
+      setError(err instanceof Error ? err.message : 'Failed to submit feedback')
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   return (
     <main className="min-h-screen bg-black px-4 py-10 text-zinc-100">
@@ -104,10 +105,10 @@ export default function FeedbackPage() {
             disabled={submitting}
             className="w-full rounded-lg bg-blue-500 px-5 py-3 text-sm font-medium text-white hover:bg-blue-600 transition disabled:opacity-50"
           >
-            {submitting ? "Submitting..." : "Submit"}
+            {submitting ? 'Submitting...' : 'Submit'}
           </button>
         </form>
       </div>
     </main>
-  );
+  )
 }

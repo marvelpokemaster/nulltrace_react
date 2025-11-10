@@ -9,16 +9,11 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Sync login/logout state
   useEffect(() => {
-    const updateAuth = () => {
-      setUsername(localStorage.getItem("username"));
-    };
-
-    updateAuth(); // initial
+    const updateAuth = () => setUsername(localStorage.getItem("username"));
+    updateAuth();
     window.addEventListener("authChange", updateAuth);
     window.addEventListener("storage", updateAuth);
-
     return () => {
       window.removeEventListener("authChange", updateAuth);
       window.removeEventListener("storage", updateAuth);
@@ -83,6 +78,20 @@ export default function Navbar() {
                 >
                   Opinions
                 </Link>
+
+                {/* Admin Dashboard visible only to admin */}
+                {username?.toLowerCase() === "admin" && (
+                  <Link
+                    href="/admin"
+                    className={`text-sm font-medium transition-colors duration-200 ${
+                      pathname.startsWith("/admin")
+                        ? "text-blue-400"
+                        : "text-zinc-400 hover:text-cyan-400"
+                    }`}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
 
                 <button
                   onClick={handleLogout}
