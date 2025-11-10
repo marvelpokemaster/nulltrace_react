@@ -3,7 +3,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 # Getting Started
 
 ## Frontend:
-Its implemented using React , Next with tailwind css
+Its implemented using React , Next with tailwind css.
 
 ### Setup:
 
