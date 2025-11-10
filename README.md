@@ -68,6 +68,7 @@ python3 app.py
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 # note
+- api is bs
 - You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 - Basically everything important we modify for the UI is inside the /app folder , we have api handling the js . That is the non-markup part (logical) part of the code.
 - Each folder under app serves as an endpoint eg: http://localhost:3000/feedback
