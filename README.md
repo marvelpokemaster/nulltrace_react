@@ -2,7 +2,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 # Getting Started
 
-## Frontend:
 Its implemented using React , Next with tailwind css.
 
 ### Setup:
@@ -16,10 +15,10 @@ Second, cd to the repo's frontend folder
 cd nulltrace_react
 ```
 
-## Frontend Setup:
+## Frontend:
 First, cd to the repo's frontend folder
 ```
-cd nulltrace_react
+cd ./frontend
 ```
 
 Second, install dependencies using [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm):
