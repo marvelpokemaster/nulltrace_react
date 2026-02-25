@@ -7,18 +7,21 @@ import json
 from datetime import datetime
 from textblob import TextBlob
 from blockchain import Blockchain
+import os
 
 blockchain = Blockchain()
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+
+
 def get_conn():
     return psycopg2.connect(
-        dbname="nulltrace",
-        user="postgres",
-        password="postgres",
-        host="localhost"
+        dbname=os.getenv("DB_NAME", "nulltrace"),
+        user=os.getenv("DB_USER", "postgres"),
+        password=os.getenv("DB_PASSWORD", "postgres"),
+        host=os.getenv("DB_HOST", "localhost"),
     )
 
 with get_conn() as conn:
@@ -418,4 +421,4 @@ def verify_chain():
     return jsonify({"valid": valid, "length": len(blockchain.chain), "message": "Blockchain integrity verified ✅" if valid else "⚠️ Blockchain tampered!"})
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000)

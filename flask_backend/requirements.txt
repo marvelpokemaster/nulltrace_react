@@ -1,5 +1,5 @@
 flask
 flask-cors
-psycopg2
+psycopg2-binary
 textblob
 web3
