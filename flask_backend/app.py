@@ -14,8 +14,6 @@ blockchain = Blockchain()
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-
-
 def get_conn():
     return psycopg2.connect(
         dbname=os.getenv("DB_NAME", "nulltrace"),
