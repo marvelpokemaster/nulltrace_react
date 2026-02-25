@@ -1,0 +1,27 @@
+# ========================
+# Frontend (Next.js)
+# ========================
+
+frontend/node_modules
+frontend/.next
+frontend/out
+frontend/.env
+frontend/.vercel
+
+# ========================
+# Backend (Flask)
+# ========================
+
+flask_backend/venv/
+flask_backend/__pycache__/
+flask_backend/*.pyc
+
+# ========================
+# General
+# ========================
+
+.DS_Store
+*.pem
+.env*
+coverage/
+build/
