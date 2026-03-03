@@ -283,7 +283,7 @@ def feedback():
 
                 # 🔹 Insert analytics (AI rating + sentiment)
                 cur.execute(
-                    "INSERT INTO analytics (analytics_id, result, engine_id, feedback_id, analyzed_at) VALUES (%s, %s, %s, %s, %s);",
+                    "INSERT INTO analytics (analytics_id, result, engine_id, response_id, analyzed_at) VALUES (%s, %s, %s, %s, %s);",
                     (
                         str(uuid.uuid4()),
                         json.dumps({
@@ -384,7 +384,7 @@ def admin_all_feedbacks():
                         a.result
                     FROM feedback_responses fr
                     LEFT JOIN response_answers ra ON fr.response_id = ra.response_id
-                    LEFT JOIN analytics a ON a.feedback_id = fr.response_id
+                    LEFT JOIN analytics a ON a.response_id = fr.response_id
                     ORDER BY fr.submitted_at DESC;
                 """)
                 rows = cur.fetchall()

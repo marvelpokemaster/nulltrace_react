@@ -1,22 +1,24 @@
 services:
+
   db:
-    image: postgres:15
+    image: nulltrace-db:latest
+    build: ./database
     container_name: nulltrace-db
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_DB: nulltrace
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./flask_backend/db.sql:/docker-entrypoint-initdb.d/db.sql
-    ports:
-      - "5433:5432"
+    networks:
+      - nulltrace-net
 
   backend:
-    container_name: nulltrace-backend
+    image: nulltrace-backend:latest
     build: ./flask_backend
-    restart: always
+    container_name: nulltrace-backend
+    restart: unless-stopped
     depends_on:
       - db
     environment:
@@ -26,17 +28,26 @@ services:
       DB_PASSWORD: postgres
     ports:
       - "5000:5000"
+    networks:
+      - nulltrace-net
 
   frontend:
-    container_name: nulltrace-frontend
+    image: nulltrace-frontend:latest
     build: ./frontend
-    restart: always
+    container_name: nulltrace-frontend
+    restart: unless-stopped
     depends_on:
       - backend
     environment:
       NEXT_PUBLIC_API_URL: http://backend:5000
     ports:
       - "3000:3000"
+    networks:
+      - nulltrace-net
 
 volumes:
   postgres_data:
+
+networks:
+  nulltrace-net:
+    driver: bridge
