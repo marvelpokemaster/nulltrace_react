@@ -14,6 +14,14 @@ Second, cd to the repo's frontend folder
 ```
 cd nulltrace_react
 ```
+## Shortcut:
+So this shortcut still a work in progress but its possible to run this project in your device at ease by using docker (a containerisation software).
+Expect bugs.
+```docker
+docker compose down -v
+docker compose build --no-cache
+docker compose up
+```
 
 ## Frontend:
 First, cd to the repo's frontend folder
