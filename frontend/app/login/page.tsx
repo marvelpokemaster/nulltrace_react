@@ -2,6 +2,7 @@
 
 import React, { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { fetchWithCSRF, fetchCSRFToken } from "@/lib/csrf";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -34,7 +35,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/login", {
+      const res = await fetchWithCSRF("http://127.0.0.1:5000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -47,6 +48,7 @@ export default function LoginPage() {
       // Save user session to localStorage
       localStorage.setItem("username", data.name || username);
       localStorage.setItem("user_id", data.user_id);
+      await fetchCSRFToken(); // Refresh CSRF token after login
       window.dispatchEvent(new CustomEvent("authChange"));
       if (data.name && data.name.toLowerCase() === "admin") {
   router.push("/admin");

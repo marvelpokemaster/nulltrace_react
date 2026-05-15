@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { fetchCSRFToken } from "@/lib/csrf";
 
 export default function Navbar() {
   const [username, setUsername] = useState<string | null>(null);
@@ -10,6 +11,9 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Fetch CSRF token on app load
+    fetchCSRFToken();
+
     const updateAuth = () => setUsername(localStorage.getItem("username"));
     updateAuth();
     window.addEventListener("authChange", updateAuth);

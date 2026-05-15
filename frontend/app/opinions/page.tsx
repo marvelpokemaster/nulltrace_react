@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { fetchWithCSRF } from "@/lib/csrf";
 
 interface Opinion {
   id: string;
@@ -77,7 +78,7 @@ export default function OpinionsPage() {
     setError("");
 
     try {
-      const res = await fetch(`${API}/api/opinions`, {
+      const res = await fetchWithCSRF(`${API}/api/opinions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -2,6 +2,7 @@
 
 import React, { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { fetchWithCSRF } from "@/lib/csrf";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -28,7 +29,7 @@ export default function RegisterPage() {
     setSuccess("");
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/api/register", {
+      const res = await fetchWithCSRF("http://127.0.0.1:5000/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: trimmedUser, password: trimmedPass }),

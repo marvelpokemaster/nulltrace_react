@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, FormEvent } from "react";
+import { fetchWithCSRF } from "@/lib/csrf";
 
 export default function TargetsPage() {
   const [targets, setTargets] = useState([]);
@@ -15,7 +16,7 @@ export default function TargetsPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    await fetch(`${API}/api/targets`, {
+    await fetchWithCSRF(`${API}/api/targets`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, category }),

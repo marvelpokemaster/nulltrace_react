@@ -9,11 +9,20 @@ from textblob import TextBlob
 from blockchain import Blockchain
 import os
 
+import bleach
+from flask_wtf.csrf import CSRFProtect, generate_csrf
+
+
 blockchain = Blockchain()
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
-
+app.config["SECRET_KEY"] = "supersecretkey"
+csrf = CSRFProtect(app)
+CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000"
+        ]}})
+# restricted CORS origins to frontend port
 def get_conn():
     return psycopg2.connect(
         dbname=os.getenv("DB_NAME", "nulltrace"),
@@ -31,6 +40,11 @@ def hash_password(password: str):
     return hashlib.sha256(password.encode()).hexdigest()
 
 ADMIN_USERNAME = "admin"
+
+@app.route("/api/csrf-token", methods=["GET"])
+def get_csrf_token():
+    # Generate and return a CSRF token for the frontend to use
+    return jsonify({"csrf_token": generate_csrf()})
 
 @app.before_request
 def restrict_admin_routes():
@@ -122,6 +136,8 @@ def opinions():
         submitted_by = data.get("submitted_by")
         target_id = data.get("target_id")
         content = data.get("content")
+        content = bleach.clean(content)
+        #cleans the input
         if not target_id or not content:
             return jsonify({"error": "Missing target_id or content"}), 400
         blob = TextBlob(content)

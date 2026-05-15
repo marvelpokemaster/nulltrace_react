@@ -2,6 +2,7 @@
 
 import React, { useState, FormEvent, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { fetchWithCSRF } from '@/lib/csrf'
 
 export default function FeedbackPage() {
   const [message, setMessage] = useState('')
@@ -36,7 +37,7 @@ export default function FeedbackPage() {
     setError('')
 
     try {
-      const res = await fetch('http://127.0.0.1:5000/api/feedback', {
+      const res = await fetchWithCSRF('http://127.0.0.1:5000/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
