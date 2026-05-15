@@ -11,17 +11,32 @@ import os
 
 import bleach
 from flask_wtf.csrf import CSRFProtect, generate_csrf
-
+from werkzeug.utils import secure_filename
+import re
 
 blockchain = Blockchain()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "supersecretkey"
 csrf = CSRFProtect(app)
-CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000"
-        ]}})
+frontend_url = os.getenv("FRONTEND_URL")
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
+]
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
+CORS(app, supports_credentials=True, resources={r"/api/*": {"origins": allowed_origins}})
+
+def valid_username(username):
+    return isinstance(username, str) and re.fullmatch(r"[A-Za-z0-9_]{3,30}", username)
+
+def valid_password(password):
+    return isinstance(password, str) and len(password) >= 5
+def valid_content(content):
+    return isinstance(content, str) and 1 <= len(content.strip()) <= 1000
+    
 # restricted CORS origins to frontend port
 def get_conn():
     return psycopg2.connect(
@@ -65,6 +80,10 @@ def register_user():
     password = data.get("password")
     if not username or not password:
         return jsonify({"error": "Missing username or password"}), 400
+    if not valid_username(username):
+        return jsonify({"error": "Invalid username format. Must be 3-30 alphanumeric characters."}), 400
+    if not valid_password(password):
+        return jsonify({"error": "Invalid password format. Must be at least 5 characters long."}), 400
     user_id = str(uuid.uuid4())
     hashed_pw = hash_password(password)
     role = "admin" if username.lower() == "admin" else "user"
@@ -86,6 +105,10 @@ def login_user():
     password = data.get("password")
     if not username or not password:
         return jsonify({"error": "Missing username or password"}), 400
+    if not valid_username(username):
+        return jsonify({"error": "Invalid username format"}), 400
+    if not valid_password(password):
+        return jsonify({"error": "Invalid password format"}), 400
     hashed_pw = hash_password(password)
     try:
         with get_conn() as conn:
@@ -117,6 +140,10 @@ def targets():
     category = data.get("category")
     if not name:
         return jsonify({"error": "Missing name"}), 400
+    if not valid_content(name):
+        return jsonify({"error": "Invalid target name format"}), 400
+    if category and not valid_content(category):
+        return jsonify({"error": "Invalid target category format"}), 400
     try:
         target_id = str(uuid.uuid4())
         with get_conn() as conn:
@@ -140,6 +167,8 @@ def opinions():
         #cleans the input
         if not target_id or not content:
             return jsonify({"error": "Missing target_id or content"}), 400
+        if not valid_content(content):
+            return jsonify({"error": "Invalid content format. Must be 1-1000 characters."}), 400
         blob = TextBlob(content)
         polarity = blob.sentiment.polarity
         sentiment, rating = "neutral", 3
@@ -222,11 +251,42 @@ def opinions():
 
 @app.route("/api/feedback", methods=["POST"])
 def feedback():
-    data = request.json or {}
-    submitted_by = data.get("submitted_by")
-    content = data.get("content")
+    if request.is_json:
+        data = request.json or {}
+        submitted_by = data.get("submitted_by")
+        content = data.get("content")
+    else:
+        submitted_by = request.form.get("submitted_by")
+        content = request.form.get("content", "")
+        
+        if 'file' in request.files:
+            file = request.files['file']
+            if file and file.filename:
+                # 1. Extension whitelist (prevent malicious executable uploads)
+                if not file.filename.lower().endswith('.txt'):
+                    return jsonify({"error": "Only .txt files are allowed."}), 400
+                
+                # 2. Safe filename handling (prevent path traversal attacks)
+                filename = secure_filename(file.filename)
+                
+                # 3. MIME validation (prevent MIME spoofing)
+                if file.mimetype != 'text/plain':
+                    return jsonify({"error": "Invalid MIME type. Must be text/plain."}), 400
+                
+                # 4. File size restriction (1MB limit to prevent oversized upload abuse)
+                file.seek(0, os.SEEK_END)
+                if file.tell() > 1 * 1024 * 1024:
+                    return jsonify({"error": "File exceeds 1MB limit."}), 413
+                file.seek(0)
+                
+                # Read file safely
+                file_content = file.read().decode('utf-8', errors='ignore')
+                content = (content + "\n\n" + file_content).strip() if content else file_content.strip()
+
     if not submitted_by or not content:
         return jsonify({"error": "Missing submitted_by or content"}), 400
+    if not valid_content(content):
+        return jsonify({"error": "Invalid feedback content format. Must be 1-1000 characters."}), 400
 
     # 🔹 Use TextBlob to infer sentiment & rating
     blob = TextBlob(content)

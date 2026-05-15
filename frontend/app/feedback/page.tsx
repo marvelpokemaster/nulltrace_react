@@ -6,6 +6,7 @@ import { fetchWithCSRF } from '@/lib/csrf'
 
 export default function FeedbackPage() {
   const [message, setMessage] = useState('')
+  const [file, setFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -37,14 +38,28 @@ export default function FeedbackPage() {
     setError('')
 
     try {
-      const res = await fetchWithCSRF('http://127.0.0.1:5000/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      let body, headers;
+
+      if (file) {
+        const formData = new FormData();
+        formData.append('submitted_by', userId);
+        formData.append('content', message);
+        formData.append('file', file);
+        body = formData;
+        // Omit Content-Type to let browser generate boundary for multipart/form-data
+        headers = {};
+      } else {
+        body = JSON.stringify({
           submitted_by: userId,
           content: message
-          // no rating here — backend infers it via TextBlob
-        })
+        });
+        headers = { 'Content-Type': 'application/json' };
+      }
+
+      const res = await fetchWithCSRF('http://127.0.0.1:5000/api/feedback', {
+        method: 'POST',
+        headers,
+        body
       })
 
       const data = await res.json()
@@ -52,6 +67,7 @@ export default function FeedbackPage() {
 
       setSubmitted(true)
       setMessage('')
+      setFile(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit feedback')
     } finally {
@@ -98,8 +114,18 @@ export default function FeedbackPage() {
             placeholder="Write your feedback..."
             rows={5}
             className="w-full rounded-lg border border-zinc-700 bg-[#222] px-4 py-3 text-zinc-100 placeholder:text-zinc-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-            required
+            required={!file}
           />
+
+          <div className="flex flex-col gap-2 text-sm bg-[#1a1a1a] p-4 rounded-lg border border-zinc-800">
+            <label className="text-zinc-400 font-medium">Or upload a .txt file:</label>
+            <input 
+              type="file" 
+              accept=".txt"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-zinc-200 hover:file:bg-zinc-700"
+            />
+          </div>
 
           <button
             type="submit"

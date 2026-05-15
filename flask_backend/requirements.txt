@@ -2,4 +2,5 @@ flask
 flask-cors
 psycopg2-binary
 textblob
-web3
+bleach
+Flask-WTF
