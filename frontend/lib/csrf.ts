@@ -1,4 +1,4 @@
-const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000";
+const API = ""; // Proxy handles routing
 
 // Fetches the CSRF token from Flask and stores it in sessionStorage
 export async function fetchCSRFToken() {
@@ -23,7 +23,14 @@ export async function fetchWithCSRF(url: string, options: RequestInit = {}) {
   const opts: RequestInit = {
     ...options,
     credentials: "include",
+    headers: { ...options.headers } as Record<string, string>,
   };
+
+  // Attach JWT token if available
+  const jwt = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  if (jwt) {
+    (opts.headers as Record<string, string>)["Authorization"] = `Bearer ${jwt}`;
+  }
 
   const method = opts.method?.toUpperCase() || "GET";
   if (["POST", "PUT", "DELETE", "PATCH"].includes(method)) {
@@ -34,10 +41,7 @@ export async function fetchWithCSRF(url: string, options: RequestInit = {}) {
       token = sessionStorage.getItem("csrf_token");
     }
 
-    opts.headers = {
-      ...opts.headers,
-      "X-CSRFToken": token || "",
-    };
+    (opts.headers as Record<string, string>)["X-CSRFToken"] = token || "";
   }
 
   return fetch(url, opts);

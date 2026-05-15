@@ -13,11 +13,17 @@ import bleach
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from werkzeug.utils import secure_filename
 import re
+import jwt
+from functools import wraps
+from datetime import timedelta
+import time
+import sys
 
 blockchain = Blockchain()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "supersecretkey"
+app.config["JWT_SECRET_KEY"] = "supersecretjwtkey"
 csrf = CSRFProtect(app)
 frontend_url = os.getenv("FRONTEND_URL")
 allowed_origins = [
@@ -46,10 +52,25 @@ def get_conn():
         host=os.getenv("DB_HOST", "localhost"),
     )
 
-with get_conn() as conn:
-    with conn.cursor() as cur:
-        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';")
-        cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS password TEXT;")
+MAX_RETRIES = 5
+RETRY_DELAY = 3
+
+for attempt in range(MAX_RETRIES):
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'user';")
+                cur.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS password TEXT;")
+        print("Database initialization successful.")
+        break
+    except psycopg2.OperationalError as e:
+        print(f"Database connection failed (attempt {attempt + 1}/{MAX_RETRIES}): {e}")
+        if attempt < MAX_RETRIES - 1:
+            print(f"Retrying in {RETRY_DELAY} seconds...")
+            time.sleep(RETRY_DELAY)
+        else:
+            print("Fatal: Could not connect to the database after multiple attempts.")
+            sys.exit(1)
 
 def hash_password(password: str):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -61,17 +82,32 @@ def get_csrf_token():
     # Generate and return a CSRF token for the frontend to use
     return jsonify({"csrf_token": generate_csrf()})
 
-@app.before_request
-def restrict_admin_routes():
-    if request.method == "OPTIONS":
-        return None
-    if request.path.startswith("/api/admin"):
-        data = request.get_json(silent=True) or {}
-        username = data.get("username") or request.args.get("username") or request.headers.get("X-Username")
-        if username is None:
-            return jsonify({"error": "Missing username"}), 403
-        if username.lower() != ADMIN_USERNAME:
-            return jsonify({"error": "Unauthorized"}), 403
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if request.method == "OPTIONS":
+            return f(*args, **kwargs)
+        token = None
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+        if not token:
+            return jsonify({"error": "Token is missing"}), 401
+        try:
+            data = jwt.decode(token, app.config["JWT_SECRET_KEY"], algorithms=["HS256"])
+            request.user = data
+        except Exception:
+            return jsonify({"error": "Token is invalid or expired"}), 401
+        return f(*args, **kwargs)
+    return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not hasattr(request, "user") or request.user.get("role") != "admin":
+            return jsonify({"error": "Admin privilege required"}), 403
+        return f(*args, **kwargs)
+    return decorated
 
 @app.route("/api/register", methods=["POST"])
 def register_user():
@@ -86,7 +122,7 @@ def register_user():
         return jsonify({"error": "Invalid password format. Must be at least 5 characters long."}), 400
     user_id = str(uuid.uuid4())
     hashed_pw = hash_password(password)
-    role = "admin" if username.lower() == "admin" else "user"
+    role = "user"
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
@@ -120,7 +156,15 @@ def login_user():
                 user = cur.fetchone()
         if not user:
             return jsonify({"error": "Invalid credentials"}), 401
-        return jsonify({"success": True, "user_id": user[0], "name": user[1], "role": user[2]})
+            
+        token = jwt.encode({
+            "user_id": user[0],
+            "name": user[1],
+            "role": user[2],
+            "exp": datetime.utcnow() + timedelta(hours=24)
+        }, app.config["JWT_SECRET_KEY"], algorithm="HS256")
+        
+        return jsonify({"success": True, "token": token, "user_id": user[0], "name": user[1], "role": user[2]})
     except psycopg2.Error as e:
         return jsonify({"error": str(e)}), 500
 
@@ -394,6 +438,8 @@ def feedback():
 
 
 @app.route("/api/admin/overview", methods=["GET"])
+@token_required
+@admin_required
 def admin_overview():
     try:
         with get_conn() as conn:
@@ -411,6 +457,8 @@ def admin_overview():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/admin/opinions", methods=["GET"])
+@token_required
+@admin_required
 def admin_all_opinions():
     try:
         with get_conn() as conn:
@@ -448,6 +496,8 @@ def admin_all_opinions():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/admin/feedbacks", methods=["GET"])
+@token_required
+@admin_required
 def admin_all_feedbacks():
     try:
         with get_conn() as conn:
@@ -486,10 +536,14 @@ def admin_all_feedbacks():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/admin/chain", methods=["GET"])
+@token_required
+@admin_required
 def view_chain():
     return jsonify(blockchain.to_dict())
 
 @app.route("/api/admin/verify_chain", methods=["GET"])
+@token_required
+@admin_required
 def verify_chain():
     valid = blockchain.is_valid()
     return jsonify({"valid": valid, "length": len(blockchain.chain), "message": "Blockchain integrity verified ✅" if valid else "⚠️ Blockchain tampered!"})

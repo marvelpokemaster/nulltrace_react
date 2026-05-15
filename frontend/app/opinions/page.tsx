@@ -32,7 +32,7 @@ export default function OpinionsPage() {
   const [username, setUsername] = useState<string | null>(null);
   const router = useRouter();
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000";
+  const API = ""; // Proxy handles routing
 
   // Fetch targets + opinions
   const fetchData = async () => {

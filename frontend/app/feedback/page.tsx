@@ -56,7 +56,7 @@ export default function FeedbackPage() {
         headers = { 'Content-Type': 'application/json' };
       }
 
-      const res = await fetchWithCSRF('http://127.0.0.1:5000/api/feedback', {
+      const res = await fetchWithCSRF('/api/feedback', {
         method: 'POST',
         headers,
         body

@@ -7,7 +7,7 @@ export default function TargetsPage() {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5000";
+  const API = ""; // Proxy handles routing
 
   async function fetchTargets() {
     const res = await fetch(`${API}/api/targets`);

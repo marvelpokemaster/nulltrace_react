@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { fetchWithCSRF } from '@/lib/csrf'
 
 export default function AdminDashboard() {
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+  const API = ''; // Proxy handles routing
   const [overview, setOverview] = useState(null)
   const [opinions, setOpinions] = useState([])
   const [feedbacks, setFeedbacks] = useState([])
@@ -21,12 +22,10 @@ export default function AdminDashboard() {
 
     const loadData = async () => {
       try {
-        const headers = { 'X-Username': username }
-
         const [ov, op, fb] = await Promise.all([
-          fetch(`${API}/api/admin/overview`, { headers }).then(r => r.json()),
-          fetch(`${API}/api/admin/opinions`, { headers }).then(r => r.json()),
-          fetch(`${API}/api/admin/feedbacks`, { headers }).then(r => r.json())
+          fetchWithCSRF(`${API}/api/admin/overview`).then(r => r.json()),
+          fetchWithCSRF(`${API}/api/admin/opinions`).then(r => r.json()),
+          fetchWithCSRF(`${API}/api/admin/feedbacks`).then(r => r.json())
         ])
 
         setOverview(ov)
