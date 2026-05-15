@@ -2,8 +2,15 @@
 -- NULLTRACE DATABASE SETUP (final, compatible with app.py)
 -- ===========================================================
 
-DROP SCHEMA public CASCADE;
-CREATE SCHEMA public;
+DROP TABLE IF EXISTS analytics CASCADE;
+DROP TABLE IF EXISTS response_answers CASCADE;
+DROP TABLE IF EXISTS feedback_responses CASCADE;
+DROP TABLE IF EXISTS questions CASCADE;
+DROP TABLE IF EXISTS feedback_forms CASCADE;
+DROP TABLE IF EXISTS opinions CASCADE;
+DROP TABLE IF EXISTS opinion_targets CASCADE;
+DROP TABLE IF EXISTS engines CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 -- ==================== USERS ====================
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
