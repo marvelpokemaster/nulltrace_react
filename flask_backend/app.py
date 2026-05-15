@@ -18,6 +18,7 @@ from functools import wraps
 from datetime import timedelta
 import time
 import sys
+import bcrypt
 
 blockchain = Blockchain()
 
@@ -73,7 +74,7 @@ for attempt in range(MAX_RETRIES):
             sys.exit(1)
 
 def hash_password(password: str):
-    return hashlib.sha256(password.encode()).hexdigest()
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 ADMIN_USERNAME = "admin"
 
@@ -145,16 +146,15 @@ def login_user():
         return jsonify({"error": "Invalid username format"}), 400
     if not valid_password(password):
         return jsonify({"error": "Invalid password format"}), 400
-    hashed_pw = hash_password(password)
     try:
         with get_conn() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT user_id, name, role FROM users WHERE name = %s AND password = %s;",
-                    (username, hashed_pw),
+                    "SELECT user_id, name, role, password FROM users WHERE name = %s;",
+                    (username,),
                 )
                 user = cur.fetchone()
-        if not user:
+        if not user or not bcrypt.checkpw(password.encode(), user[3].encode()):
             return jsonify({"error": "Invalid credentials"}), 401
             
         token = jwt.encode({

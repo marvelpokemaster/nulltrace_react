@@ -20,7 +20,7 @@ INSERT INTO users (user_id, name, password, role)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
     'admin',
-    '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', -- SHA256('admin')
+    crypt('admin', gen_salt('bf')), -- bcrypt('admin')
     'admin'
 );
 
